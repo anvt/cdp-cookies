@@ -10,11 +10,12 @@ import (
 	"time"
 
 	"github.com/chromedp/cdproto/cdp"
+	"github.com/chromedp/cdproto/network"
 )
 
 // parse reads from r and returns the cookies contents of the r.
-func parse(r io.Reader) ([]*Cookie, error) {
-	cookies := []*Cookie{}
+func parse(r io.Reader) (*CookiesParams, error) {
+	cookies := &CookiesParams{}
 
 	s := bufio.NewScanner(r)
 
@@ -50,7 +51,7 @@ func parse(r io.Reader) ([]*Cookie, error) {
 
 		expires := cdp.TimeSinceEpoch(time.Unix(int64(expirySec), int64(expiryNSec)))
 
-		cookie := &Cookie{
+		cookie := &network.CookieParam{
 			Name:     segments[5],
 			Value:    segments[6],
 			Domain:   segments[0],
@@ -60,7 +61,7 @@ func parse(r io.Reader) ([]*Cookie, error) {
 			Expires:  &expires,
 		}
 
-		cookies = append(cookies, cookie)
+		cookies.Cookies = append(cookies.Cookies, cookie)
 	}
 
 	if err := s.Err(); err != nil {
@@ -71,12 +72,12 @@ func parse(r io.Reader) ([]*Cookie, error) {
 }
 
 // ParseAll reads from r and returns the cookies contents of the r.
-func ParseAll(r io.Reader) ([]*Cookie, error) {
+func ParseAll(r io.Reader) (*CookiesParams, error) {
 	return parse(r)
 }
 
 // ParseFile retrieve cookies contents from specified name.
-func ParseFile(name string) ([]*Cookie, error) {
+func ParseFile(name string) (*CookiesParams, error) {
 	f, err := os.Open(name)
 	if err != nil {
 		return nil, err
@@ -87,6 +88,6 @@ func ParseFile(name string) ([]*Cookie, error) {
 }
 
 // ParseString retrieve cookies contents from specified string.
-func ParseString(s string) ([]*Cookie, error) {
+func ParseString(s string) (*CookiesParams, error) {
 	return parse(bytes.NewBufferString(s))
 }
