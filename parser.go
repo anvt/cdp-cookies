@@ -65,7 +65,7 @@ func parse(r io.Reader) (*CookiesParams, error) {
 	}
 
 	if err := s.Err(); err != nil {
-		return nil, nil
+		return nil, err
 	}
 
 	return cookies, nil
